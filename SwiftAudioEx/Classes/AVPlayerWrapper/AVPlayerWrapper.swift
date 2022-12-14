@@ -26,11 +26,13 @@ class AVPlayerWrapper: AVPlayerWrapperProtocol {
     
     // MARK: - Properties
     
-    fileprivate var avPlayer = AVPlayer()
+    fileprivate var avPlayer = AVQueuePlayer()
     private let playerObserver = AVPlayerObserver()
     internal let playerTimeObserver: AVPlayerTimeObserver
     private let playerItemNotificationObserver = AVPlayerItemNotificationObserver()
     private let playerItemObserver = AVPlayerItemObserver()
+
+    var playerLooper: AVPlayerLooper!
 
     fileprivate var initialTime: TimeInterval?
     fileprivate var pendingAsset: AVAsset? = nil
@@ -226,7 +228,15 @@ class AVPlayerWrapper: AVPlayerWrapperProtocol {
                             automaticallyLoadedAssetKeys: [Constants.assetPlayableKey]
                         )
                         item.preferredForwardBufferDuration = self.bufferDuration
-                        self.avPlayer.replaceCurrentItem(with: item)
+                        // self.avPlayer.replaceCurrentItem(with: item)
+
+                        self.avPlayer.insert(item, after: nil)
+
+                        // Create a new player looper with the queue player and template item
+                        self.playerLooper = AVPlayerLooper(player: self.avPlayer, templateItem: item)
+
+                        // self.queuePlayer.play()
+
                         // Register for events
                         self.playerTimeObserver.registerForBoundaryTimeEvents()
                         self.playerObserver.startObserving()
@@ -289,7 +299,7 @@ class AVPlayerWrapper: AVPlayerWrapperProtocol {
     
     /// Will recreate the AVPlayer instance. Used when the current one fails.
     private func recreateAVPlayer() {
-        let player = AVPlayer()
+        let player = AVQueuePlayer()
         playerObserver.player = player
         playerTimeObserver.player = player
         playerTimeObserver.registerForPeriodicTimeEvents()

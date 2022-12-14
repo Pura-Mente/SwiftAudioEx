@@ -220,7 +220,8 @@ public class QueuedAudioPlayer: AudioPlayer, QueueManagerDelegate {
                 event.queueIndex.emit(data: (currentIndex, nil))
             }
         case .track:
-            try? jumpToItem(atIndex: currentIndex, playWhenReady: true)
+            seek(to: 0);
+            play()
         case .queue:
             do {
                 let nextItem = try queueManager.next()
